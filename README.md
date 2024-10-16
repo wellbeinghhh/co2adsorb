@@ -12,6 +12,7 @@ This repository contains code and datasets for predicting the CO₂ adsorption p
     - numpy==1.24.3
     - scikit-learn==1.3.0
     - shap==0.40.0
+    - xgboost==1.5.0
 
 ## Installation
 
