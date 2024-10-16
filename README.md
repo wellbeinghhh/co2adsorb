@@ -29,102 +29,83 @@ This repository contains code and datasets for predicting the CO₂ adsorption p
 
 ## Data Preparation for LLMs
 
-The dataset consists of numerical and textual data. To format the data for LLMs:
+The `prompt_generation.py` script prepares data prompts for training large language models (LLMs), specifically for predicting CO₂ adsorption performance based on various material properties.
 
-1. Use the script `prepare_llm_prompts.py` to prepare input-output pairs for the LLM model:
+### Steps for Prompt Generation:
 
+1. **Build and Format the Prompts**:
+   The script generates prompts based on material properties such as surface area, pore volume, amine type, and experimental conditions. You can control the level of detail included in the prompt using different parameters such as whether to include chemical properties, research background, or physical data description.
+
+2. **Generate Prompts for Training and Testing**:
+
+    Example usage:
+    
     ```python
     import pandas as pd
-
-    # Load dataset
-    df = pd.read_csv('data/material_performance.csv')
-
-    # Example of preparing data for LLM prompts
-    def generate_prompt(row):
-        return f"Surface area: {row['surface_area']} m²/g, Pore volume: {row['pore_volume']} cm³/g, Amine type: {row['amine_type']}. CO2 adsorption uptake: {row['co2_adsorption']} mmol/g."
-
-    df['prompt'] = df.apply(generate_prompt, axis=1)
-
-    # Save the prompts for LLMs
-    df[['prompt', 'co2_adsorption']].to_csv('llm_prompts.csv', index=False)
-    ```
-
-2. Feed these prepared prompts into the LLM model (e.g., ChatGPT API).
-
-## Machine Learning Models
-
-To train and evaluate traditional ML models, follow these steps:
-
-1. Preprocess the dataset by extracting features (e.g., specific surface area, pore volume):
-
-    ```python
-    from sklearn.model_selection import train_test_split
-    from sklearn.preprocessing import StandardScaler
+    from prompt_generation import build_prompt, generate_test_data
 
     # Load the dataset
     df = pd.read_csv('data/material_performance.csv')
 
-    # Extract input features and target
-    X = df[['surface_area', 'pore_volume', 'amine_type', 'temperature', 'humidity']]
-    y = df['co2_adsorption']
+    # Specify training data indices
+    train_indices = [0, 1, 2, 3, 4, 5]
 
-    # Split the data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    # Generate training prompts
+    prompt = build_prompt(df, train_indices, include_research_background=True,
+                          include_chemical=True, include_data_description=True,
+                          include_impact_condition=True, include_key_features=True)
 
-    # Scale the features
-    scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
+    # Print the generated prompt for review
+    print(prompt)
     ```
 
-2. Train the ML models (e.g., Random Forest):
+3. **Generate Test Prompts**:
+   To generate test prompts based on the same dataset for LLM evaluation:
 
     ```python
-    from sklearn.ensemble import RandomForestRegressor
-    from sklearn.metrics import mean_squared_error, r2_score
+    # Specify test data indices
+    test_indices = list(set(range(len(df))) - set(train_indices))
 
-    # Initialize the model
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
-
-    # Train the model
-    model.fit(X_train, y_train)
-
-    # Make predictions
-    y_pred = model.predict(X_test)
-
-    # Evaluate the model
-    mse = mean_squared_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
-    print(f"MSE: {mse}, R²: {r2}")
+    # Generate test prompts and save them to a file
+    for idx in range(0, len(test_indices), 5):
+        test_prompt = generate_test_data(df, test_indices[idx:idx + 5])
+        with open(f"test_sample_{idx}.txt", "w") as f:
+            f.write(test_prompt)
     ```
+
+4. **Save the Prompts**:
+   The generated prompts will be saved as text files for input into the LLM (e.g., ChatGPT API or any other LLM model).
+
+
+## Machine Learning Models
+
+The `train_baseline.py` script is used to train and evaluate baseline machine learning models, such as Random Forest, for predicting CO₂ adsorption performance. It includes functionality for:
+
+- Loading and preprocessing the dataset
+- Training machine learning models
+- Evaluating models using metrics like MAE, MSE, R², and correlation
+- Visualizing the performance of different models and feature combinations
+
+You can modify the script to use other machine learning models or customize the dataset as needed.
 
 ## SHAP Analysis
 
-To perform feature importance analysis using SHAP:
+The `SHAP_analysis.py` script performs feature importance analysis using SHAP (SHapley Additive exPlanations). It supports multiple types of SHAP visualizations, which can be selected using command-line arguments.
 
-1. Install SHAP if you haven't:
+### Available SHAP Analysis Options:
+- **Summary Plot**: Displays an overview of feature importance across all samples.
+- **Dependence Plot**: Shows the effect of a specific feature on the model's output.
+- **Interaction Plot**: Visualizes interactions between features.
+- **Force Plot**: Explains individual predictions by showing the contribution of each feature.
+- **Waterfall Plot**: Breaks down a single prediction into its feature contributions.
+- **Partial Dependence Plot**: Shows the marginal effect of individual features on predictions.
+
+### Example Usage:
+
+1. **Run SHAP Analysis by specifying the type of plot**:
     ```bash
-    pip install shap
+    python SHAP_analysis.py --shap_type summary --output_dir ./SHAP_results
     ```
-
-2. Run SHAP analysis on the trained model:
-
-    ```python
-    import shap
-
-    # Create a SHAP explainer
-    explainer = shap.Explainer(model, X_train)
-
-    # Calculate SHAP values
-    shap_values = explainer(X_test)
-
-    # Visualize the SHAP summary plot
-    shap.summary_plot(shap_values, X_test)
-    ```
-
-## Results
-
-All evaluation results, including metrics (MSE, R²) and SHAP importance values, will be saved and visualized in the `results/` directory.
 
 ---
 
