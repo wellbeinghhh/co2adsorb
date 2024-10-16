@@ -1,4 +1,4 @@
-# Predicting CO₂ Adsorption Performance of Solid Amine Adsorbents Using LLMs and ML Models
+# Methodology for Predicting Material Performance by Context-based Modeling: A Case Study on Solid Amine CO2 Adsorbents
 
 ## Overview
 This repository contains code and datasets for predicting the CO₂ adsorption performance of solid amine adsorbents using both large language models (LLMs) and traditional machine learning (ML) models. 
