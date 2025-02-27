@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
+11111111
 # Data for the analysis
 data = {
     'Specific surface area before amine dispersing': [643.03, 643.03, 643.03, 643.03, 643.03, 643.03, 185, 185, 185, 526, 526, 526, 999, 999, 999, 999, 700, 700, 700],
